@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JalDrishti जलदृष्टि | Know Before You Drill</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- App CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="glass-header">
+        <div class="logo-container">
+            <div class="logo-icon">💧</div>
+            <div class="logo-text">
+                <h1>JalDrishti <span class="hindi-text">जलदृष्टि</span></h1>
+                <p class="tagline">Know Before You Drill</p>
+            </div>
+        </div>
+        
+        <div class="controls-container">
+            <div class="search-wrapper">
+                <input type="text" id="address-search" placeholder="Search address or location..." autocomplete="off">
+                <div id="search-dropdown" class="autocomplete-dropdown hidden"></div>
+            </div>
+            
+            <div class="input-group">
+                <input type="number" id="planned-depth" placeholder="Depth (ft)" min="100" max="2000" value="500" title="Planned Depth (ft)">
+            </div>
+            
+            <div class="input-group">
+                <select id="planned-month" title="Planned Drilling Month">
+                    <option value="1">Jan</option>
+                    <option value="2">Feb</option>
+                    <option value="3">Mar</option>
+                    <option value="4">Apr</option>
+                    <option value="5">May</option>
+                    <option value="6">Jun</option>
+                    <option value="7">Jul</option>
+                    <option value="8">Aug</option>
+                    <option value="9">Sep</option>
+                    <option value="10">Oct</option>
+                    <option value="11">Nov</option>
+                    <option value="12">Dec</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <input type="number" id="grid-radius" placeholder="Radius (km)" min="0.5" max="5" step="0.5" value="2" title="Grid Analysis Radius (km)">
+            </div>
+            
+            <div class="action-buttons">
+                <button id="find-best-spot-btn" class="btn primary">Find Best Spot</button>
+                <button id="heatmap-toggle" class="btn secondary">Toggle Heatmap</button>
+                <button id="print-btn" class="btn secondary">Print Report</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- Left Column: Map -->
+        <section class="map-section">
+            <div id="map"></div>
+            <div class="map-overlay-buttons">
+                <button class="precision-mode-toggle" id="precision-toggle">🎯 Precision Mode</button>
+                <button class="location-detect-btn" id="my-location-btn">📍 My Location</button>
+            </div>
+            <div id="crosshair-overlay" class="crosshair-container hidden">
+                <div class="crosshair">
+                    <div class="crosshair-dot"></div>
+                    <div class="crosshair-pulse"></div>
+                </div>
+            </div>
+            <div id="precision-panel" class="precision-panel hidden">
+                <div class="precision-coords">
+                    <span>LAT</span> <span id="prec-lat">17.385000</span>
+                    &nbsp;|&nbsp;
+                    <span>LNG</span> <span id="prec-lng">78.486000</span>
+                </div>
+                <button class="btn-use-location" id="use-location-btn">📍 Analyze This Spot</button>
+            </div>
+            <div class="layer-control">
+                <label><input type="radio" name="tileLayer" value="satellite" checked> Satellite (Esri)</label>
+                <label><input type="radio" name="tileLayer" value="sentinel"> Sentinel-2</label>
+                <label><input type="radio" name="tileLayer" value="osm"> Street (OSM)</label>
+                <label><input type="radio" name="tileLayer" value="topo"> Topo</label>
+            </div>
+            <div id="coord-overlay" class="map-overlay">Lat: -- | Lng: --</div>
+        </section>
+        
+        <!-- Right Column: Dashboard -->
+        <section class="dashboard-section">
+            
+            <!-- Initial State -->
+            <div id="initial-state" class="state-card active">
+                <div class="icon-large">📍</div>
+                <h3>Ready to Analyze</h3>
+                <p>Search an address or click anywhere on the map to predict borewell failure risk.</p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="state-card hidden">
+                <div class="water-loader"></div>
+                <h3>Analyzing strata...</h3>
+                <p>Processing geological, hydrological, and satellite data.</p>
+            </div>
+
+            <!-- Results State -->
+            <div id="results-state" class="results-container hidden">
+                
+                <!-- Location Bar -->
+                <div class="card location-card">
+                    <h2 id="loc-name">Mandal, District, State</h2>
+                    <div class="badges">
+                        <span class="badge rock" id="badge-rock">Granite</span>
+                        <span class="badge aquifer" id="badge-aquifer">Fractured</span>
+                    </div>
+                </div>
+
+                <div class="grid-2-col">
+                    <!-- Risk Gauge -->
+                    <div class="card risk-card">
+                        <h3>Failure Risk</h3>
+                        <div class="gauge-container">
+                            <svg viewBox="0 0 100 50" class="gauge">
+                                <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="12" stroke-linecap="round" />
+                                <path id="gauge-fill" class="gauge-value" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="125.6" stroke-dashoffset="125.6" />
+                            </svg>
+                            <div class="gauge-content">
+                                <div id="risk-score" class="score">--</div>
+                                <div id="risk-category" class="category">Category</div>
+                            </div>
+                        </div>
+                        <div class="confidence">Confidence: <span id="risk-confidence">--%</span></div>
+                    </div>
+
+                    <!-- Depth Recommendation -->
+                    <div class="card depth-card">
+                        <h3>Depth Analysis</h3>
+                        <div class="depth-track-container">
+                            <div class="depth-labels">
+                                <span>0'</span>
+                                <span>1000'</span>
+                            </div>
+                            <div class="depth-track">
+                                <div class="depth-gradient"></div>
+                                <div id="optimal-range" class="optimal-range"></div>
+                                <div id="planned-marker" class="planned-marker"></div>
+                            </div>
+                            <div class="depth-stats">
+                                <div>Recommended: <span id="rec-depth" class="highlight">-- ft</span></div>
+                                <div>Planned: <span id="display-planned-depth">-- ft</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW: Grid Analysis Card -->
+                <div id="grid-analysis-card" class="card grid-analysis-card hidden">
+                    <h3>Best Spot Analysis</h3>
+                    <div class="grid-results" id="grid-results-list">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- NEW: Monthly Risk Matrix Card -->
+                <div id="monthly-risk-card" class="card monthly-risk-card hidden">
+                    <h3>Monthly Risk Matrix</h3>
+                    <div class="risk-calendar" id="risk-calendar">
+                        <!-- Filled by JS -->
+                    </div>
+                    <div class="risk-detail-panel hidden" id="risk-detail-panel">
+                        <h4 id="risk-detail-month">--</h4>
+                        <p id="risk-detail-explanation" class="text-sm">--</p>
+                        <div class="risk-detail-lists">
+                            <div class="risk-list" id="risk-detail-risks"></div>
+                            <div class="advantage-list" id="risk-detail-advantages"></div>
+                        </div>
+                        <p class="detail-rec mt-4" id="risk-detail-recommendation">--</p>
+                    </div>
+                </div>
+
+                <!-- Geology -->
+                <div class="card geology-card geo-pattern">
+                    <h3>Geological Strata</h3>
+                    <div id="geology-details" class="details-list">
+                        <!-- Expandable details added by JS if available, else fallback to static grid -->
+                    </div>
+                    <div id="geology-fallback" class="stats-grid hidden">
+                        <div class="stat-item">
+                            <span class="label">Rock Type</span>
+                            <span class="value" id="geo-rock">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Lineament Density</span>
+                            <span class="value" id="geo-lineament">-- <small>fractures/km²</small></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Weathered Zone</span>
+                            <span class="value" id="geo-weathered">-- <small>ft</small></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Bedrock Depth</span>
+                            <span class="value" id="geo-bedrock">-- <small>ft</small></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Fracture Trend</span>
+                            <span class="value" id="geo-trend">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hydrology -->
+                <div class="card hydrology-card">
+                    <h3>Hydrological Profile</h3>
+                    <div id="hydrology-details" class="details-list">
+                        <!-- Expandable details added by JS -->
+                    </div>
+                    <div id="hydrology-fallback" class="stats-grid hidden">
+                        <div class="stat-item">
+                            <span class="label">15y Avg Rainfall</span>
+                            <span class="value" id="hydro-rain">-- <small>mm</small></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Monsoon Avg</span>
+                            <span class="value" id="hydro-monsoon">-- <small>mm</small></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Avg ET₀</span>
+                            <span class="value" id="hydro-et0">-- <small>mm</small></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Effective Recharge</span>
+                            <span class="value" id="hydro-recharge">-- <small>mm</small></span>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container mt-4">
+                        <h4 class="text-sm">Annual Rainfall vs ET₀ (15 Years)</h4>
+                        <div id="rainfall-chart" class="bar-chart"></div>
+                    </div>
+                </div>
+                
+                <div class="grid-2-col">
+                    <!-- Terrain -->
+                    <div class="card terrain-card">
+                        <h3>Terrain & Surface</h3>
+                        <div id="terrain-details" class="details-list">
+                            <!-- Expandable details -->
+                        </div>
+                        <div id="terrain-fallback" class="stats-list hidden">
+                            <div class="list-item"><span>Elevation</span><strong id="ter-elev">--</strong></div>
+                            <div class="list-item"><span>Slope</span><strong id="ter-slope">--</strong></div>
+                            <div class="list-item"><span>TWI Value</span><strong id="ter-twi">--</strong></div>
+                            <div class="list-item"><span>Nearest Water</span><strong id="ter-water">--</strong></div>
+                            <div class="list-item"><span>Land Cover</span><strong id="ter-land">--</strong></div>
+                            <div class="list-item"><span>Impervious</span><strong id="ter-imperv">--</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Soil Properties -->
+                    <div class="card soil-card">
+                        <h3>Soil Properties</h3>
+                        <div id="soil-details" class="details-list">
+                            <!-- Expandable details -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nearby Stats -->
+                <div class="card nearby-card">
+                    <h3>Local Context</h3>
+                    <div class="stats-list">
+                        <div class="list-item"><span>Avg Local Depth</span><strong id="near-depth">--</strong></div>
+                        <div class="list-item"><span>Success Rate</span><strong id="near-success">--</strong></div>
+                        <div class="list-item"><span>Extraction Stage</span><strong id="near-extract">--</strong></div>
+                        <div class="list-item"><span>Extraction Category</span><strong id="near-extract-cat">--</strong></div>
+                    </div>
+                </div>
+
+                <!-- Risk Factors -->
+                <div class="card factors-card">
+                    <h3>Key Risk Contributors (SHAP)</h3>
+                    <div id="factors-list" class="factors-container">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Advisory Panel -->
+                <div class="card advisory-card">
+                    <div class="advisory-header">
+                        <h3>Advisory <span class="hindi-text">सलाह</span></h3>
+                        <button id="lang-toggle" class="btn text-btn">Switch to Hindi</button>
+                    </div>
+                    <div id="advisory-text" class="advisory-content">--</div>
+                </div>
+                
+                <!-- NEW: Data Sources Card -->
+                <div id="data-sources-card" class="card data-sources-card hidden">
+                    <h3>Data Sources & Reliability</h3>
+                    <div id="data-sources-list" class="source-list">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>Data Sources: CGWB, Open-Meteo, SoilGrids, ISRO Bhuvan, Esri World Imagery</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- App JS -->
+    <script src="app.js"></script>
+</body>
+</html>

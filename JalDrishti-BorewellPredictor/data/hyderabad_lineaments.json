@@ -1,0 +1,72 @@
+{
+  "description": "Geological lineament data for the Hyderabad metropolitan region. Lineaments represent fractures, faults, and joints in the Archean granite-gneiss basement that control groundwater occurrence. Data compiled from CGWB aquifer mapping reports and GSI geological maps.",
+  "source": "CGWB Aquifer Mapping Reports, GSI District Resource Maps",
+  "zones": [
+    {
+      "zone_id": "HYD_CORE",
+      "name": "Hyderabad Urban Core",
+      "description": "Dense urban granite terrain. Fractures largely sealed by construction. Low effective lineament density due to concretization.",
+      "bbox": {"min_lat": 17.35, "max_lat": 17.48, "min_lng": 78.40, "max_lng": 78.55},
+      "lineament_density_per_km2": 1.5,
+      "dominant_trend": "NE-SW",
+      "rock_type": "Pink Granite / Grey Granite-Gneiss",
+      "fracture_depth_range_m": [30, 150],
+      "notes": "Shallow weathered zone mostly desaturated. Deep fractures at 80-150m may still hold water."
+    },
+    {
+      "zone_id": "HYD_WEST_IT",
+      "name": "Western IT Corridor (Gachibowli-Kondapur-Madhapur)",
+      "description": "Rapidly urbanized granite terrain. High density of deep borewells competing for limited fracture water.",
+      "bbox": {"min_lat": 17.41, "max_lat": 17.49, "min_lng": 78.30, "max_lng": 78.42},
+      "lineament_density_per_km2": 2.0,
+      "dominant_trend": "NE-SW and NW-SE cross-cutting",
+      "rock_type": "Granite-Gneiss with quartzite intrusions",
+      "fracture_depth_range_m": [40, 200],
+      "notes": "NW-SE cross-cutting lineaments may hold better yields. Tor formations (boulder hills) indicate deep weathering pockets."
+    },
+    {
+      "zone_id": "HYD_NORTH",
+      "name": "Northern Expansion (Bachupally-Dundigal-Kompally)",
+      "description": "Peri-urban zone with active construction. Granite terrain with moderate fracturing.",
+      "bbox": {"min_lat": 17.50, "max_lat": 17.60, "min_lng": 78.35, "max_lng": 78.50},
+      "lineament_density_per_km2": 1.8,
+      "dominant_trend": "NE-SW",
+      "rock_type": "Grey Granite-Gneiss",
+      "fracture_depth_range_m": [25, 120],
+      "notes": "Transitional zone. Weathered aquifer still partially saturated in less built-up pockets."
+    },
+    {
+      "zone_id": "HYD_EAST",
+      "name": "Eastern Corridor (Uppal-Ghatkesar-Keesara)",
+      "description": "Less urbanized granite terrain with better preserved weathered zone. Higher lineament density near the Musi River.",
+      "bbox": {"min_lat": 17.38, "max_lat": 17.55, "min_lng": 78.55, "max_lng": 78.70},
+      "lineament_density_per_km2": 2.8,
+      "dominant_trend": "ENE-WSW following Musi river fault",
+      "rock_type": "Granite-Gneiss with dolerite dykes",
+      "fracture_depth_range_m": [20, 100],
+      "notes": "Dolerite dykes act as barriers/conduits depending on orientation. ENE-WSW lineaments aligned with Musi fault zone show higher yields."
+    },
+    {
+      "zone_id": "HYD_SOUTH",
+      "name": "Southern Rural (Rajendranagar-Maheshwaram-Ibrahimpatnam)",
+      "description": "Semi-rural granite terrain with thicker weathered zone. Better recharge conditions.",
+      "bbox": {"min_lat": 17.10, "max_lat": 17.35, "min_lng": 78.30, "max_lng": 78.65},
+      "lineament_density_per_km2": 3.2,
+      "dominant_trend": "NNE-SSW and E-W",
+      "rock_type": "Granite-Gneiss with occasional migmatites",
+      "fracture_depth_range_m": [15, 80],
+      "notes": "CGWB's Maheshwaram research watershed is located here. Best-studied aquifer system in the Hyderabad region. Shallow borewells (200-400ft) often successful."
+    },
+    {
+      "zone_id": "HYD_WEST_BASALT",
+      "name": "Western Basalt Cap (Vikarabad-Sangareddy fringe)",
+      "description": "Deccan Trap basalt overlying granite-gneiss basement. Dual aquifer system.",
+      "bbox": {"min_lat": 17.15, "max_lat": 17.55, "min_lng": 77.55, "max_lng": 78.15},
+      "lineament_density_per_km2": 2.3,
+      "dominant_trend": "NW-SE",
+      "rock_type": "Deccan Basalt over Granite-Gneiss",
+      "fracture_depth_range_m": [10, 60],
+      "notes": "Basalt vesicular zones hold water near surface. Contact zone between basalt and underlying granite (20-40m depth) is often the best aquifer."
+    }
+  ]
+}
