@@ -100,7 +100,7 @@ def t_rainfall():
     d = json.loads(r.read())
     print(f"  Years: {len(d['years'])}")
     if d['annual_rainfall']:
-        print(f"  Rain range: {min(d['annual_rainfall']):.0f} - {max(d['annual_rainfall']):.0f} mm")
+        print(f"  Rain range : {min(d['annual_rainfall']):.0f} - {max(d['annual_rainfall']):.0f} mm")
     assert len(d['years']) > 0
 
 total += 1
