@@ -1,4 +1,4 @@
-# 💧 JalDrishti जलदृष्टि — Borewell Suitability & Risk Analysis Tool
+# 💧 JalDrishti जलदृष्टि — Borewell Suitability and Risk Analysis Tool
 
 > **Know Before You Drill** — AI-powered groundwater analysis for Hyderabad region using real CGWB data, satellite APIs, and ML models.
 
